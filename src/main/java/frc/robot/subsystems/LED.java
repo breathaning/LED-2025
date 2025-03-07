@@ -55,38 +55,38 @@ public class LED extends SubsystemBase {
     private void activateState(LEDState state) {
         if (activeStateList.contains(state)) return;
         activeStateList.add(state);
-        displayState();
+        setState();
     }
 
     private void deactivateState(LEDState state) {
         if (!activeStateList.contains(state)) return;
         activeStateList.remove(activeStateList.indexOf(state));
-        displayState();
+        setState();
     }
 
-    public void displayState() {
+    private void setState() {
         getStateCommand().cancel();
         int size = activeStateList.size();
         state = size > 0 ? activeStateList.get(size - 1) : LEDState.BLACK;
         startLED();
     }
 
-    public Command getStateCommand() {
+    private Command getStateCommand() {
         return commands.get(state);
     }
 
-    public void startLED() {
+    private void startLED() {
         strip.start();
         getStateCommand().schedule();
     }
 
-    public void stopLED() {
+    private void stopLED() {
         getStateCommand().cancel();
         setLED(0, 0, 0);
         strip.stop();
     }
 
-    public void setLED(int r, int g, int b) {
+    private void setLED(int r, int g, int b) {
         for (int i = 0; i < buffer.getLength(); i++) {
             buffer.setRGB(i, r, g, b);
         }
@@ -94,7 +94,7 @@ public class LED extends SubsystemBase {
     }
 
     public static class BlinkLED extends SequentialCommandGroup {
-        public BlinkLED(LED led){
+        private BlinkLED(LED led){
             super(
                 new InstantCommand(() -> led.stopLED()),
                 new WaitCommand(0.5d),
