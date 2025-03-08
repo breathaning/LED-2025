@@ -37,13 +37,14 @@ public class LED extends SubsystemBase {
     private AddressableLED strip;
     private AddressableLEDBuffer buffer;
     private LEDState state;
-    private ArrayList<LEDState> activeStateList = new ArrayList<LEDState>();
+    private ArrayList<LEDState> activeStateList;
 
     public LED() { 
         strip = new AddressableLED(3);
         buffer = new AddressableLEDBuffer(170);
         strip.setLength(buffer.getLength());
         activeStateList = new ArrayList<LEDState>();
+        state = LEDState.BLACK;
         startLED();
     }
 
@@ -52,13 +53,13 @@ public class LED extends SubsystemBase {
         button.onFalse(new InstantCommand(() -> deactivateState(state), this));
     }
 
-    private void activateState(LEDState state) {
+    public void activateState(LEDState state) {
         if (activeStateList.contains(state)) return;
         activeStateList.add(state);
         setState();
     }
 
-    private void deactivateState(LEDState state) {
+    public void deactivateState(LEDState state) {
         if (!activeStateList.contains(state)) return;
         activeStateList.remove(activeStateList.indexOf(state));
         setState();
@@ -125,20 +126,6 @@ public class LED extends SubsystemBase {
 
         public static interface LEDColorSupplier {
             public Color get(double progress);
-        }
-    }
-
-    private static class LinearFlag extends ChromaLED {
-        private static double reductionFactor = 0.9;
-        private LinearFlag(LED led, int[] colors) {
-            super(led, (double progress) -> {
-                int color = colors[(int)Math.floor(progress*colors.length)];
-                return new Color(
-                    (int)Math.floor(((color >> 16)& 255) * reductionFactor),
-                    (int)Math.floor(((color >> 8) & 255) * reductionFactor), 
-                    (int)Math.floor(((color >> 0) & 255) * reductionFactor)
-                );
-            });
         }
     }
 }
