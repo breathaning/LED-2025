@@ -24,10 +24,10 @@ public class LED extends SubsystemBase {
     {
         commands.put(LEDState.WHITE, new InstantCommand(() -> setLED(75, 75, 75), this));
         commands.put(LEDState.BLACK, new InstantCommand(() -> setLED(0, 0, 0), this));
-        commands.put(LEDState.RED, new InstantCommand(() -> setLED(255, 0, 0)));
-        commands.put(LEDState.GREEN, new InstantCommand(() -> setLED(0, 255, 0)));
-        commands.put(LEDState.BLUE, new InstantCommand(() -> setLED(0, 0, 255)));
-        commands.put(LEDState.TURQUOISE, new InstantCommand(() -> setLED(50, 210, 200)));
+        commands.put(LEDState.RED, new InstantCommand(() -> setLED(255, 0, 0), this));
+        commands.put(LEDState.GREEN, new InstantCommand(() -> setLED(0, 255, 0), this));
+        commands.put(LEDState.BLUE, new InstantCommand(() -> setLED(0, 0, 255), this));
+        commands.put(LEDState.TURQUOISE, new InstantCommand(() -> setLED(50, 210, 200), this));
         commands.put(LEDState.PURPLE, new InstantCommand(() -> setLED(70, 0, 100), this));
         commands.put(LEDState.YELLOW, new InstantCommand(() -> setLED(150, 75, 0), this));
         commands.put(LEDState.RAINBOW, new ChromaLED(this, (double i) -> Color.fromHSV((int)Math.floor(i * 180), 255, 255)).repeatedly());
@@ -112,4 +112,28 @@ public class LED extends SubsystemBase {
             public Color get(double progress);
         }
     }
+
+    // private static class BlinkLED extends Command {
+    //     private LED led;
+    //     private LEDColorSupplier supplier;
+
+    //     private BlinkLED(LED led, LEDColorSupplier supplier) {
+    //         this.led = led;
+    //         this.supplier = supplier;
+    //         addRequirements(led);
+    //     }
+
+    //     @Override
+    //     public void execute() {
+    //         int len = led.buffer.getLength();
+    //         for (int i = 0; i < len; i++) {
+    //             led.buffer.setLED(i, supplier.get(i / len));
+    //         }
+    //         led.strip.setData(led.buffer);
+    //     }
+
+    //     private static interface LEDColorSupplier {
+    //         public Color get(double progress);
+    //     }
+    // }
 }
