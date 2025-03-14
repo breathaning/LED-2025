@@ -9,9 +9,7 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 public class LED extends SubsystemBase {
@@ -41,7 +39,7 @@ public class LED extends SubsystemBase {
 
     public LED() { 
         strip = new AddressableLED(3);
-        buffer = new AddressableLEDBuffer(170);
+        buffer = new AddressableLEDBuffer(50);
         strip.setLength(buffer.getLength());
         activeStateList = new ArrayList<LEDState>();
         state = LEDState.BLACK;
@@ -81,28 +79,11 @@ public class LED extends SubsystemBase {
         getStateCommand().schedule();
     }
 
-    private void stopLED() {
-        getStateCommand().cancel();
-        setLED(0, 0, 0);
-        strip.stop();
-    }
-
     private void setLED(int r, int g, int b) {
         for (int i = 0; i < buffer.getLength(); i++) {
             buffer.setRGB(i, r, g, b);
         }
         strip.setData(buffer);
-    }
-
-    public static class BlinkLED extends SequentialCommandGroup {
-        private BlinkLED(LED led){
-            super(
-                new InstantCommand(() -> led.stopLED()),
-                new WaitCommand(0.5d),
-                new InstantCommand(() -> led.startLED()),
-                new WaitCommand(0.5d)
-            );
-        }
     }
 
     private static class ChromaLED extends Command {
@@ -118,9 +99,12 @@ public class LED extends SubsystemBase {
         @Override
         public void execute() {
             int len = led.buffer.getLength();
-            int offset = (int)Math.floor((System.currentTimeMillis()/10) % len);
-            for (int i = 0; i < len; i++)
-                led.buffer.setLED((i+offset) % len, supplier.get((double)i/len));
+            int offset = (int) Math.floor((System.currentTimeMillis() / 10));
+            for (int i = 0; i < len; i++) {
+                int index = (i + offset) % len;
+                Color color = supplier.get((double) i / len);
+                led.buffer.setLED(index, color);
+            }
             led.strip.setData(led.buffer);
         }
 
