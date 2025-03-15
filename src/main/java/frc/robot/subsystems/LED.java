@@ -31,7 +31,7 @@ public class LED extends SubsystemBase {
         commands.put(LEDState.TURQUOISE, new InstantCommand(() -> setLED(50, 210, 200), this));
         commands.put(LEDState.PURPLE, new InstantCommand(() -> setLED(70, 0, 100), this));
         commands.put(LEDState.YELLOW, new InstantCommand(() -> setLED(150, 75, 0), this));
-        commands.put(LEDState.RAINBOW, new ChromaLED(this, (double i) -> Color.fromHSV((int)Math.floor(i * 180), 255, 255)).repeatedly());
+        commands.put(LEDState.RAINBOW, new ChromaLED(this, (double i) -> Color.fromHSV((int)Math.floor(i * 180), 255, 255)));
     };
 
     // addressable led
@@ -50,9 +50,7 @@ public class LED extends SubsystemBase {
         strip = new AddressableLED(3);
         buffer = new AddressableLEDBuffer(50);
         strip.setLength(buffer.getLength());
-
         blinking = false;
-
         activeStateList = new ArrayList<LEDState>();
         state = LEDState.BLACK;
         startLED();
