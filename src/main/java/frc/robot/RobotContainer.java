@@ -24,7 +24,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
   private final Joystick joystick = new Joystick(0);
-  private final JoystickButton ledIntake = new JoystickButton(joystick, 1);
+  private final JoystickButton ledBlink = new JoystickButton(joystick, 1);
+  private final JoystickButton ledIntake = new JoystickButton(joystick, 8);
   private final JoystickButton ledAlgae = new JoystickButton(joystick, 2);
   private final JoystickButton ledL4 = new JoystickButton(joystick, 3);
   private final JoystickButton ledL3 = new JoystickButton(joystick, 4);
@@ -65,13 +66,14 @@ public class RobotContainer {
     // cancelling on release.
     m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
 
-    led.bindButton(ledIntake, LEDState.RAINBOW);
-    led.bindButton(ledAlgae, LEDState.TURQUOISE);
-    led.bindButton(ledL4, LEDState.PURPLE);
-    led.bindButton(ledL3, LEDState.BLUE);
-    led.bindButton(ledL2, LEDState.GREEN);
-    led.bindButton(ledL1, LEDState.WHITE);
-    led.bindButton(ledDeepClimb, LEDState.RED);
+    led.bindButtonToState(ledIntake, LEDState.RAINBOW);
+    led.bindButtonToState(ledAlgae, LEDState.TURQUOISE);
+    led.bindButtonToState(ledL4, LEDState.PURPLE);
+    led.bindButtonToState(ledL3, LEDState.BLUE);
+    led.bindButtonToState(ledL2, LEDState.GREEN);
+    led.bindButtonToState(ledL1, LEDState.WHITE);
+    led.bindButtonToState(ledDeepClimb, LEDState.RED);
+    led.bindButtonToBlink(ledBlink);
   }
 
   /**

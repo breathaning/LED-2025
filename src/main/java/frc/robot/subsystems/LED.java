@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 public class LED extends SubsystemBase {
+    // state pattern bindings
     public enum LEDState {
         WHITE, BLACK, 
         RED, GREEN, BLUE, 
@@ -32,8 +33,16 @@ public class LED extends SubsystemBase {
         commands.put(LEDState.YELLOW, new InstantCommand(() -> setLED(150, 75, 0), this));
         commands.put(LEDState.RAINBOW, new ChromaLED(this, (double i) -> Color.fromHSV((int)Math.floor(i * 180), 255, 255)).repeatedly());
     };
+
+    // addressable led
     private AddressableLED strip;
     private AddressableLEDBuffer buffer;
+
+    // blinking
+    private boolean blinking;
+    private Command blinkCommand = new Blink(this);
+
+    // led state
     private LEDState state;
     private ArrayList<LEDState> activeStateList;
 
@@ -41,16 +50,26 @@ public class LED extends SubsystemBase {
         strip = new AddressableLED(3);
         buffer = new AddressableLEDBuffer(50);
         strip.setLength(buffer.getLength());
+
+        blinking = false;
+
         activeStateList = new ArrayList<LEDState>();
         state = LEDState.BLACK;
         startLED();
     }
 
-    public void bindButton(JoystickButton button, LEDState state) {
+    // bind buttons
+    public void bindButtonToState(JoystickButton button, LEDState state) {
         button.onTrue(new InstantCommand(() -> activateState(state), this));
         button.onFalse(new InstantCommand(() -> deactivateState(state), this));
     }
 
+    public void bindButtonToBlink(JoystickButton button) {
+        button.onTrue(new InstantCommand(() -> setBlink(true), this));
+        button.onFalse(new InstantCommand(() -> setBlink(false), this));
+    }
+
+    // led state
     public void activateState(LEDState state) {
         if (activeStateList.contains(state)) return;
         activeStateList.add(state);
@@ -63,17 +82,24 @@ public class LED extends SubsystemBase {
         setState();
     }
 
-    private void setState() {
+    public void setState() {
         getStateCommand().cancel();
         int size = activeStateList.size();
-        state = size > 0 ? activeStateList.get(size - 1) : LEDState.BLACK;
+        boolean on = (size > 0) && !blinking;
+        state = on ? activeStateList.get(size - 1) : LEDState.BLACK;
         startLED();
+    }
+
+    public boolean isActive() {
+        return activeStateList.size() > 0;
     }
 
     private Command getStateCommand() {
         return commands.get(state);
     }
 
+
+    // led strip and buffer
     private void startLED() {
         strip.start();
         getStateCommand().schedule();
@@ -84,6 +110,13 @@ public class LED extends SubsystemBase {
             buffer.setRGB(i, r, g, b);
         }
         strip.setData(buffer);
+    }
+
+    // led blink
+    public void setBlink(boolean blinkEnable) {
+        if (blinkCommand.isScheduled()) blinkCommand.cancel();
+        if (blinkEnable) blinkCommand.schedule();
+        setState();
     }
 
     private static class ChromaLED extends Command {
@@ -99,7 +132,7 @@ public class LED extends SubsystemBase {
         @Override
         public void execute() {
             int len = led.buffer.getLength();
-            int offset = (int) Math.floor((System.currentTimeMillis() / 10));
+            int offset = (int) Math.floor((System.currentTimeMillis() / 10) % len);
             for (int i = 0; i < len; i++) {
                 int index = (i + offset) % len;
                 Color color = supplier.get((double) i / len);
@@ -113,27 +146,39 @@ public class LED extends SubsystemBase {
         }
     }
 
-    // private static class BlinkLED extends Command {
-    //     private LED led;
-    //     private LEDColorSupplier supplier;
+    private static class Blink extends Command {
+        private LED led;
+        private long blinkTime;
 
-    //     private BlinkLED(LED led, LEDColorSupplier supplier) {
-    //         this.led = led;
-    //         this.supplier = supplier;
-    //         addRequirements(led);
-    //     }
+        private Blink(LED led) {
+            this.led = led;
+            blinkTime = -1L;
+            //addRequirements(led); // this one line killed me
+        }
 
-    //     @Override
-    //     public void execute() {
-    //         int len = led.buffer.getLength();
-    //         for (int i = 0; i < len; i++) {
-    //             led.buffer.setLED(i, supplier.get(i / len));
-    //         }
-    //         led.strip.setData(led.buffer);
-    //     }
+        @Override
+        public void initialize() {
+            blinkTime = -1L;
+        }
 
-    //     private static interface LEDColorSupplier {
-    //         public Color get(double progress);
-    //     }
-    // }
+        @Override
+        public void execute() {
+            long time = System.currentTimeMillis();
+            if (!led.isActive()) {
+                blinkTime = time; 
+                led.blinking = false;
+                return;
+            }
+            if (time - blinkTime < 500) return;
+            // toggle blink on and off
+            blinkTime = time;
+            led.blinking = !led.blinking;
+            led.setState();
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            led.blinking = false;
+        }
+    }
 }
