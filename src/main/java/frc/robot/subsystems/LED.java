@@ -152,7 +152,7 @@ public class LED extends SubsystemBase {
             this.led = led;
             blinkTime = -1L;
             //addRequirements(led); // this one line killed me
-        }
+        } 
 
         @Override
         public void initialize() {
