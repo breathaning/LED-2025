@@ -9,9 +9,10 @@ import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.LED;
-import frc.robot.subsystems.LED.LEDState;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -24,8 +25,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
   private final Joystick joystick = new Joystick(0);
-  private final JoystickButton ledBlink = new JoystickButton(joystick, 1);
-  private final JoystickButton ledIntake = new JoystickButton(joystick, 8);
+  private final JoystickButton ledIntake = new JoystickButton(joystick, 1);
   private final JoystickButton ledAlgae = new JoystickButton(joystick, 2);
   private final JoystickButton ledL4 = new JoystickButton(joystick, 3);
   private final JoystickButton ledL3 = new JoystickButton(joystick, 4);
@@ -33,7 +33,9 @@ public class RobotContainer {
   private final JoystickButton ledL1 = new JoystickButton(joystick, 6);
   private final JoystickButton ledDeepClimb = new JoystickButton(joystick, 7);
 
-  private final LED led = new LED();
+  private final LED led = new LED(
+    new LED.LEDStrip(0, 50)
+  );
 
   // The robot's subsystems and commands are defined here...
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
@@ -66,14 +68,13 @@ public class RobotContainer {
     // cancelling on release.
     m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
 
-    led.bindButtonToState(ledIntake, LEDState.RAINBOW);
-    led.bindButtonToState(ledAlgae, LEDState.TURQUOISE);
-    led.bindButtonToState(ledL4, LEDState.PURPLE);
-    led.bindButtonToState(ledL3, LEDState.BLUE);
-    led.bindButtonToState(ledL2, LEDState.GREEN);
-    led.bindButtonToState(ledL1, LEDState.WHITE);
-    led.bindButtonToState(ledDeepClimb, LEDState.RED);
-    led.bindButtonToBlink(ledBlink);
+    ledIntake.onTrue(new InstantCommand(() -> led.setRainbow()));
+    ledAlgae.onTrue(new InstantCommand(() -> led.setLight(Color.kTurquoise)));
+    ledL4.onTrue(new InstantCommand(() -> led.setLight(Color.kPurple)));
+    ledL3.onTrue(new InstantCommand(() -> led.setLight(Color.kBlue)));
+    ledL2.onTrue(new InstantCommand(() -> led.setLight(Color.kGreen)));
+    ledL1.onTrue(new InstantCommand(() -> led.setLight(Color.kWhite)));
+    ledDeepClimb.onTrue(new InstantCommand(() -> led.setLight(Color.kRed)));
   }
 
   /**
